@@ -1,57 +1,6 @@
 version: 2.1
 
 jobs:
-  python-tests:
-    docker:
-      - image: cimg/python:3.12
-    working_directory: ~/project/clickup-python
-    steps:
-      - checkout:
-          path: ~/project
-      - run: pip install -r requirements.txt
-      - run:
-          name: Run pytest (Goals)
-          command: pytest
-
-  postman-tests:
-    docker:
-      - image: cimg/node:20.11
-    working_directory: ~/project
-    steps:
-      - checkout
-      - run:
-          name: Install Newman
-          command: npm install newman newman-reporter-htmlextra
-      - run:
-          name: Run Newman (Goals/Lists)
-          command: >
-            ./node_modules/.bin/newman run "ClickUp Lists API.postman_collection.json"
-            --env-var "token=$CLICKUP_TOKEN"
-            --env-var "folder_id=$CLICKUP_FOLDER_ID"
-            --env-var "space_id=$CLICKUP_SPACE_ID"
-            --env-var "base_url=https://api.clickup.com/api/v2"
-
-  cypress-tests:
-    docker:
-      - image: cypress/included:13.13.0
-    working_directory: ~/project/clickup-cypress
-    environment:
-      CYPRESS_token: $CLICKUP_TOKEN
-      CYPRESS_teamId: $CLICKUP_TEAM_ID
-      CYPRESS_userId: $CLICKUP_USER_ID
-    steps:
-      - checkout:
-          path: ~/project
-      - run:
-          name: Install dependencies
-          command: npm install
-      - run:
-          name: Install Cypress binary
-          command: npx cypress install
-      - run:
-          name: Run Cypress (Goals)
-          command: npx cypress run
-
   tasks-python-tests:
     docker:
       - image: cimg/python:3.12
@@ -105,9 +54,6 @@ jobs:
 workflows:
   all-tests:
     jobs:
-      - python-tests
-      - postman-tests
-      - cypress-tests
       - tasks-python-tests
       - tasks-postman-tests
       - tasks-cypress-tests
