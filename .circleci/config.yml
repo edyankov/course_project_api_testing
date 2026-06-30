@@ -21,7 +21,10 @@ jobs:
       - checkout
       - run:
           name: Install Newman
-          command: npm install newman newman-reporter-htmlextra
+          command: npm install newman@6 newman-reporter-htmlextra
+      - run:
+          name: Verify Newman installation
+          command: ls node_modules/.bin/ | grep newman
       - run:
           name: Run Newman (Tasks)
           command: >
@@ -29,7 +32,10 @@ jobs:
             --env-var "token=$CLICKUP_TOKEN"
             --env-var "list_id=$CLICKUP_LIST_ID"
             --env-var "base_url=https://api.clickup.com/api/v2"
-            -r htmlextra
+            -r cli,htmlextra
+            --reporter-htmlextra-export newman/tasks-report.html
+      - store_artifacts:
+          path: newman
 
   tasks-cypress-tests:
     docker:
