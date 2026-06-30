@@ -1,0 +1,184 @@
+{
+  "info": {
+    "name": "ClickUp Tasks API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Task",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "{{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Postman task\",\n  \"description\": \"Created via Postman\",\n  \"priority\": 3\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/list/{{list_id}}/task",
+          "host": ["{{base_url}}"],
+          "path": ["list", "{{list_id}}", "task"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('Has task id', () => pm.expect(body.id).to.be.a('string'));",
+              "pm.test('Name matches', () => pm.expect(body.name).to.eql('Postman task'));",
+              "pm.environment.set('task_id', body.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Task",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "{{token}}" }],
+        "url": {
+          "raw": "{{base_url}}/task/{{task_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["task", "{{task_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Correct id', () => pm.expect(pm.response.json().id).to.eql(pm.environment.get('task_id')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Tasks In List",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "{{token}}" }],
+        "url": {
+          "raw": "{{base_url}}/list/{{list_id}}/task",
+          "host": ["{{base_url}}"],
+          "path": ["list", "{{list_id}}", "task"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "const tasks = pm.response.json().tasks;",
+              "pm.test('Created task present', () => pm.expect(tasks.map(t=>t.id)).to.include(pm.environment.get('task_id')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update Task",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Authorization", "value": "{{token}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Postman task (updated)\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/task/{{task_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["task", "{{task_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Name updated', () => pm.expect(pm.response.json().name).to.eql('Postman task (updated)'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Task Without Token (negative)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/task/{{task_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["task", "{{task_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 400 (verified against live API via pytest run)', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Nonexistent Task (negative)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "{{token}}" }],
+        "url": {
+          "raw": "{{base_url}}/task/invalid_task_id_000",
+          "host": ["{{base_url}}"],
+          "path": ["task", "invalid_task_id_000"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 401 (verified against live API)', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete Task",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "{{token}}" }],
+        "url": {
+          "raw": "{{base_url}}/task/{{task_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["task", "{{task_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 204 No Content (verified against live API)', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
